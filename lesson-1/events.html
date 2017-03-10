@@ -1,0 +1,43 @@
+<html>
+<head>
+    <title></title>
+    <style>
+        #c {
+            height: 100px;
+            background-color: aquamarine;
+        }
+    </style>
+</head>
+<body>
+<div id="a">
+    <h1>A</h1>
+    <div id="b">
+        <h1>B</h1>
+        <div id="c">
+            <h1>C</h1>
+        </div>
+    </div>
+</div>
+<div contenteditable="true" id="edit" style="height: 200px;"></div>
+<script>
+
+    document.querySelector('body').addEventListener('click', function (evt) {
+//        alert('body');
+        evt.stopPropagation();
+        // evt.preventDefault();
+    }, true);
+
+    document.querySelector('#c,#a,#b').addEventListener('click', function (evt) {
+        alert(evt.target.id);
+    }, false);
+
+//    document.querySelector('#a').addEventListener('click', function (evt) {
+//        alert(evt.target.id);
+//    }, false);
+
+//    document.querySelector('#b').addEventListener('click', function (evt) {
+//        alert(evt.target.id);
+//    }, false);
+</script>
+</body>
+</html>
