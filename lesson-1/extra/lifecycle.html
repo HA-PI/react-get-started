@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .app.app {
+            background-color: #3c8dbc;
+        }
+        div.app.app {
+            background-color: #d2d6de;
+        }
+    </style>
+</head>
+<body>
+<div class="app app" id="app"></div>
+
+<script src="//cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+<script src="//cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+<script src="//cdn.bootcss.com/babel-core/5.8.34/browser-polyfill.min.js"></script>
+<script src="//cdn.bootcss.com/babel-core/5.8.34/browser.min.js"></script>
+<script type="text/babel">
+
+    // props  state
+
+    var Greeting = React.createClass({
+        propTypes: {
+            name: React.PropTypes.string
+        },
+
+        getDefaultProps: function() {
+            return {
+                name: 'Mary'
+            };
+        },
+
+        getInitialState: function() {
+            return {};
+        },
+
+
+        render: function () {
+            return (
+                <p>Hello, {this.props.name}</p>
+            )
+        }
+    });
+
+
+
+    var App = React.createClass({
+        getInitialState: function() {
+           return {show: true, value: 'abc'}
+        },
+        shouldComponentUpdate: function () {
+            return true;
+        },
+        render: function () {
+            var show = this.state.show;
+            var value = this.state.value;
+            return (
+                <div>
+                    {show && <Greeting name={value} />}
+                    <input defaultValue={value} onChange={e => this.setState({value: e.target.value})}/>
+                    <br/>
+                    <button onClick={e => this.setState({show: true})}>Show</button>
+                    <button onClick={e => this.setState({show: false})}>Hide</button>
+                </div>
+            )
+        }
+    })
+
+    ReactDOM.render(
+        <App />,
+        document.getElementById('app')
+    );
+</script>
+
+</body>
+</html>
