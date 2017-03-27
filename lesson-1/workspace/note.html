@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Note</title>
+    <script src="//cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="//cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+    <script src="//cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+    <script src="//cdn.bootcss.com/babel-core/5.8.34/browser-polyfill.min.js"></script>
+    <script src="//cdn.bootcss.com/babel-core/5.8.34/browser.min.js"></script>
+</head>
+<style>
+    #div1{
+        width:800px;
+        height:500px;
+        border:1px dashed #bbaa33;
+        margin:20px auto;
+    }
+    #input{
+        display:block;
+        margin:10px auto;
+    }
+    #menu{
+        margin:10px auto;
+        width:100px;
+        height:50px;
+    }
+    #list{
+        margin:10px auto;
+        width: 500px;
+        height:300px;
+        border:1px dotted #cc6600;
+        overflow: scroll;
+        list-style-type:none;
+    }
+</style>
+<body>
+<div id="div1"></div>
+<script type="text/babel">
+
+    var len=null;
+    if(window.localStorage.getItem("len")==null)
+        len=0;
+    else
+        len=window.localStorage.getItem("len");
+    var Note=React.createClass({
+        propTypes: {
+            list: React.PropTypes.array
+        },
+        getDefaultProps: function() {
+            return {
+                list: [],
+
+            };
+        },
+        getInitialState: function () {
+             var list=[];
+
+             for(var i=0;i<window.localStorage.length;i++)
+             {
+             var getKey=localStorage.key(i);
+             if(getKey.substring(0,4)=="note")
+             list.push({content:window.localStorage.getItem(getKey),index:getKey});
+             }
+             return {list:list,editing:true};
+        },
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.list !== this.props.list) {
+                this.setState({list: nextProps.list});
+            }
+        },
+        _save:function () {
+
+            var list=this.state.list;
+            var value=this.refs.note.value;
+            if(value.trim()!='') {
+                len++;window.localStorage.setItem("len",len);
+                window.localStorage.setItem("note" +(len-1),value);
+                var arr=[];
+                for(var i=0;i<window.localStorage.length;i++)
+                {
+                    var getKey=localStorage.key(i);
+                    if(getKey.substring(0,4)=="note")
+                        arr.push({content:window.localStorage.getItem(getKey),index:getKey});
+                }
+                this.setState({list: arr});
+            }
+
+        },
+        _show:function () {
+            this.setState({editing:false});
+        },
+        _write:function () {
+            this.setState({editing:true});
+        },
+        _delete:function () {
+            var editing=this.state.editing;
+            if(!editing) {
+                var list = this.state.list;
+                list.map(function (x) {
+                    if (x.selected) {
+                        window.localStorage.removeItem(x.index);
+                    }
+                });
+                list = list.filter(x => !x.selected);
+                console.info(list);
+                this.setState({list: list});
+            }
+        },
+        _select:function (i) {
+            var list = this.state.list;//.slice();
+            list[i].selected = !list[i].selected;
+            this.setState({list: list});
+        },
+        _search:function (e) {
+
+            var list = this.state.list;
+            var text=e.target.value.trim();
+            list.map(function(x){
+                x.content.indexOf(text)>=0 ? Object.assign(x, {hidden: false}): Object.assign(x, {hidden: true})
+            });
+            this.setState({
+                list:list
+            });
+        },
+        render: function () {
+            var editing=this.state.editing;
+           var list=this.state.list;
+            var self=this;
+            return<div>
+                {editing?<textarea ref="note" id="input" cols="50" rows="20"></textarea>:<ul id="list">
+                    <input type="search" onChange={this._search}/>
+                    {list.map(function (x,i) {
+                    return <li><Single key={i}
+                                       content={x.content}
+                                       onSelect={()=>self._select(i)}
+                                       selected={x.selected}
+                                       index={x.index}
+                                       hidden={x.hidden}
+                    /></li>
+                })}</ul>}
+
+                <div id="menu">
+                    <button onClick={this._write}>WriteNotes</button>
+                    <button onClick={this._save}>SaveNotes</button>
+                    <button onClick={this._show}>MyNotes</button>
+                    <button onClick={this._delete}>DeleteNotes</button>
+                </div>
+
+            </div>
+        }
+    });
+
+    var Single = React.createClass({
+        propTypes: {
+            content: React.PropTypes.string.isRequired,
+            onRemove: React.PropTypes.func,
+            selected:React.PropTypes.bool,
+            onSelect:React.PropTypes.func,
+            index: React.PropTypes.string
+        },
+        getDefaultProps: function() {
+            return {
+                content: 'todo what?',
+                selected:false
+            };
+        },
+        getInitialState: function() {
+            return {editing: false,selected:false};
+        },
+        componentWillMount() {
+            this.setState({content: this.props.content});
+
+        },
+        componentWillReceiveProps: function (nextProps) {
+            if (nextProps.content != this.props.content) {
+                this.setState({content: nextProps.content});
+            }
+        },
+        _onUpdate: function (e) {
+            this.setState({editing: true});
+        },
+        _cancelEditing: function (e) {
+            this.setState({editing: false});
+        },
+        _onSave: function (e) {
+            var input = this.refs.input;
+            if (input.value.trim() == '') {
+                alert('value is empty!');
+            } else {
+                this.setState({
+                    editing: false,
+                    content: input.value
+                });
+                window.localStorage.setItem(this.props.index,input.value)
+            }
+        },
+
+        render: function () {
+            var editing = this.state.editing;
+            if(this.props.hidden)
+                return false;
+            return (
+                    <div style={{display:"inline-block"}}>
+                        {!editing ? <span><input type="checkbox" checked={this.props.selected} onChange={this.props.onSelect}/>{this.state.content}</span> : <input type="text" ref="input" defaultValue={this.state.content}/>}
+                        <button onClick={!editing?this._onUpdate:this._onSave}>{!editing?'Update':'Save'}</button>
+                        {editing && <button onClick={this._cancelEditing}>{'Cancel'}</button>}
+                    </div>
+            )
+        }
+    });
+    ReactDOM.render(<Note/>,$("#div1")[0]);
+</script>
+</body>
+</html>
