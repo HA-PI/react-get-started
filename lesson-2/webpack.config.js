@@ -6,12 +6,12 @@ var config = {
     entry: {
         app: [
             'babel-polyfill',
-            path.resolve(__dirname, 'app/main.js')
+            path.join(__dirname, 'app/main.js')
         ]
     },
     output: {
-        path: path.resolve(__dirname, 'build'),
-        filename: '[name].main.js'
+        path: path.join(__dirname, 'build'),
+        filename: '[name].min.js'
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),
@@ -39,7 +39,7 @@ var config = {
                 use: [{
                     loader: 'url-loader',
                     options: {
-                        limit: 8192, name: 'images/[name].[ext]'
+                        limit: 8192,// name: 'images/[name].[ext]'
                     }
                 }]
             },
