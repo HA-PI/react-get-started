@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo</title>
+
+</head>
+<body>
+<div id="app"></div>
+
+<script src="//cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+<script src="//cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+<script src="https://fiddle.jshell.net/js/babel/babel.js"></script>
+<script type="text/javascript" src="https://unpkg.com/mobx@3.1.16/lib/mobx.umd.js"></script>
+<script type="text/javascript" src="https://unpkg.com/mobx-react@4.2.2/index.js"></script>
+
+<script type="text/babel" data-presets="es2017,react,stage-0" data-plugins="transform-decorators-legacy">
+  const {observable, autorun, extendObservable} = mobx;
+  const {Provider, inject, observer} = mobxReact;
+
+  //////////////
+  // Store
+
+  class TodoStore {
+    @observable description = "";
+    @observable state = this.TODO;
+
+    constructor(state, description) {
+      this.state = state;
+      this.description = description;
+    }
+
+    static TODO = "todo";
+    static DONE = "done";
+
+  }
+
+  class TodoListStore {
+    @observable todoList = [];
+    @observable state = "all";
+
+    add(todo) {
+      if (!todo instanceof TodoStore) {
+        throw new Error(todo + " is not an instance of TodoStore");
+      }
+      this.todoList.push(todo);
+      return this;
+    }
+
+    get() {
+      return this.todoList;
+    }
+  }
+
+  class InputStore {
+    @observable text = "";
+    @observable state = TodoStore.TODO;
+  }
+
+  class Store {
+    todoList = new TodoListStore();
+    input = new InputStore();
+
+    get() {
+      return {
+        todoList: this.todoList,
+        input: this.input,
+      }
+    }
+  }
+
+  const store = new Store();
+
+  //  @observer
+  class Todo extends React.Component {
+    render() {
+      const {state, description, onRemove, index} = this.props;
+      return (
+        <div>
+          <h4>
+            <small>
+              {'#' + (index + 1)}
+            </small>
+            {state === TodoStore.DONE ? <del>{description}</del> : <span>{description}</span>}
+            <button onClick={onRemove}>Remove</button>
+          </h4>
+        </div>
+      )
+    }
+  }
+  @inject("todoList") @observer
+  class TodoList extends React.Component {
+    constructor(props) {
+      super(props);
+      this.triggerActive = this.triggerActive.bind(this);
+    }
+
+    triggerActive(evt) {
+      const {todoList} = this.props;
+      todoList.state = evt.target.value;
+
+    }
+
+    render() {
+      const {todoList} = this.props;
+      return (
+        <div>
+          <button value="all" onClick={this.triggerActive}>all</button>
+          <button value="done" onClick={this.triggerActive}>done</button>
+          <button value="todo" onClick={this.triggerActive}>todo</button>
+          <small>active: {todoList.state}</small>
+          {
+            todoList
+              .get()
+              .filter(({state}) => (todoList.state === 'all' || todoList.state === state))
+              .map((todo, i) => <Todo {...todo} index={i} key={i} onRemove={() => todoList.get().splice(i, 1)}/>)
+          }
+        </div>
+      )
+    }
+  }
+  @inject("input", "todoList") @observer
+  class TodoInput extends React.Component {
+    constructor(props) {
+      super(props);
+      this.triggerSelected = this.triggerSelected.bind(this);
+    }
+
+    triggerSelected = (evt) => {
+      const {input, todoList} = this.props;
+      input.state = evt.target.value;
+    }
+
+    render() {
+      const {input, todoList} = this.props;
+      return (
+        <div>
+          <span>
+            <input type="radio" name="state" id="todo" onClick={this.triggerSelected}
+                   checked={input.state === TodoStore.TODO} value={TodoStore.TODO}/>
+            <label form="todo">Todo</label>
+            <input type="radio" name="state" id="done" onClick={this.triggerSelected}
+                   checked={input.state === TodoStore.DONE} value={TodoStore.DONE}/>
+            <label form="done">Done</label>
+          </span>
+          <input type="text" placeholder="description" value={input.text} onInput={(e) => input.text = e.target.value}/>
+          <button onClick={() => {
+            todoList.add(new TodoStore(input.state, input.text))
+          }}>Submit
+          </button>
+        </div>
+      )
+    }
+  }
+
+  class App extends React.Component {
+    render() {
+      return (
+        <div>
+          <TodoList />
+          <TodoInput/>
+        </div>
+      )
+    }
+  }
+
+  var compose = function () {
+    var hocList = arguments;
+    return function (Comp) {
+      for (let i = 0; i < hocList.length; i++) {
+        Comp = hocList[i](Comp)
+      }
+      return class extends React.Component {
+        render() {
+          return <Comp {...this.props}/>
+        }
+      }
+    }
+  }
+
+  var log = function () {
+    var args = arguments;
+    return function (Comp) {
+      return React.createClass({
+        render: function () {
+          console.log('Log -', Comp.displayName, 'props:', this.props, 'state:', this.state);
+          return <Comp {...this.props}/>;
+        }
+      })
+    }
+  }
+
+  Todo = log()(Todo);
+  TodoList = log()(TodoList);
+  TodoInput = log()(TodoInput);
+
+  ReactDOM.render(
+    <Provider {...store.get()}>
+      <App />
+    </Provider>,
+    document.getElementById('app')
+  )
+
+</script>
+
+</body>
+</html>

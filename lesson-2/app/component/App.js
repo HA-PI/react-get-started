@@ -14,7 +14,7 @@ class App extends React.Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        this.refs.content.style.height = nextState.mini ? '0px' : this.refs.childContent.clientHeight + this.refs.bottom.clientHeight + 'px';;
+        // this.refs.content.style.height = nextState.mini ? '0px' : this.refs.childContent.clientHeight + this.refs.bottom.clientHeight + 'px';
     }
 
     componentWillMount() {
@@ -22,7 +22,8 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.refs.content.style.height = this.refs.childContent.clientHeight + this.refs.bottom.clientHeight + 'px';
+        this._contentHeight = this.refs.childContent.clientHeight + this.refs.bottom.clientHeight; //+ 'px';
+        // this.refs.content.style.height = this.refs.childContent.clientHeight + this.refs.bottom.clientHeight + 'px';
     }
 
 
@@ -35,7 +36,7 @@ class App extends React.Component {
 	static defaultProps = {
 	    title: 'Chat',
         mini: false,
-        tipText: '',
+        tipText: 'sssssn',
         msgs: [{
             name: 'Robot',
             time: new Date().toLocaleString(),
@@ -95,6 +96,7 @@ class App extends React.Component {
                         },
                         self: true
                     }, {
+                        // Object.assign({}, json.result, {appendxx : sds})
                         ...json.result,
                         appendAnimation: true,
                         doneCallback: () => {
@@ -189,7 +191,9 @@ class App extends React.Component {
         const btnCls = classname({
             addon: true,
             disabled: sendDisabled
-        })
+        });
+
+        const contentHeight = mini ? '0px' : (this._contentHeight ? this._contentHeight+'px' : '');
 
         return (
         	<div className="chat-container">
@@ -200,7 +204,7 @@ class App extends React.Component {
         				<i onClick={e=>{this.setState({mini: !this.state.mini})}} className={iconCls}></i>
         			</div>
         		</h1>
-                <div ref="content" className="main-content">
+                <div ref="content" className="main-content" style={{height: contentHeight}}>
                 <div ref="childContent" className="content">
                     {
                         msgs.map((x,i) => <Message {...x} key={i} />)

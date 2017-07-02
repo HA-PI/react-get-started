@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+
+</head>
+<body>
+<div id="app"></div>
+
+<script src="//cdn.bootcss.com/react/15.4.2/react.min.js"></script>
+<script src="//cdn.bootcss.com/react/15.4.2/react-dom.min.js"></script>
+<script src="//cdn.bootcss.com/babel-core/5.8.34/browser-polyfill.min.js"></script>
+<script src="//cdn.bootcss.com/babel-core/5.8.34/browser.min.js"></script>
+
+<script type="text/babel">
+
+
+  var Greeting = React.createClass({
+    propTypes: {
+      name: React.PropTypes.string
+    },
+
+    getDefaultProps: function () {
+      return {
+        name: 'Mary'
+      };
+    },
+
+    getInitialState: function () {
+      return {};
+    },
+
+    render: function () {
+      console.info("render");
+      return (
+        <p ref="p">Hello, {this.props.name}</p>
+      )
+    }
+  });
+
+  var compose = function () {
+    var hocList = arguments;
+    return function (Comp) {
+      for (let i = 0; i < hocList.length; i++) {
+        Comp = hocList[i](Comp)
+      }
+      return class extends React.Component {
+        render() {
+          return <Comp {...this.props}/>
+        }
+      }
+      /*return React.createClass({
+        render: function () {
+          return <Comp {...this.props}/>
+        }
+      })*/
+    }
+  }
+
+  var withoutProp = function () {
+    var args = arguments;
+    return function (Comp) {
+      return React.createClass({
+        render: function () {
+          for (var i = 0; i < args.length; i++) {
+            delete this.props[args[i]];
+          }
+          return <Comp {...this.props}/>;
+        }
+      })
+    }
+  }
+
+  var log = function () {
+    var args = arguments;
+    return function (Comp) {
+      return React.createClass({
+        render: function () {
+          console.log('Log -', Comp.displayName, 'props:', this.props, 'state:', this.state);
+          return <Comp {...this.props}/>;
+        }
+      })
+    }
+  }
+
+  var WithoutNameGreeting = withoutProp("name")(Greeting);
+  Greeting = compose(
+    withoutProp("name"),
+    log()
+  )(Greeting)
+
+  var App = React.createClass({
+    getInitialState: function () {
+      return {show: true}
+    },
+    shouldComponentUpdate: function () {
+      return true;
+    },
+    render: function () {
+      var show = this.state.show;
+      return (
+        <div>
+          {show && <Greeting name="sssswws"/>}
+          <button onClick={e => this.setState({show: true})}>Show</button>
+          <button onClick={e => this.setState({show: false})}>Hide</button>
+        </div>
+      )
+    }
+  })
+
+  ReactDOM.render(
+    <App />,
+    document.getElementById('app')
+  );
+</script>
+
+</body>
+</html>

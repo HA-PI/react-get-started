@@ -21,7 +21,7 @@ if (module.hot) {
 
 render(
     <AppContainer>
-        <App />
+        <App tipText="abc"/>
     </AppContainer>,
     document.getElementById('app')
 );

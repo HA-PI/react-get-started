@@ -99,13 +99,13 @@ class Message extends React.Component {
         const msgCls = classname({
             'message-item': true,
             'self': self,
-            'append-animate': appendAnimation
+            'append-animate': app,endAnimation
         })
 
         return (
         	<div className={msgCls}>
                 <div className="information clearfix">
-                    <span className="name">{name}'</span>
+                    <span className="name">{name}</span>
                     <span className="time">{time}</span>
                 </div>
                 <div className="message clearfix">
