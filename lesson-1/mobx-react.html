@@ -13,9 +13,42 @@
 <script src="https://fiddle.jshell.net/js/babel/babel.js"></script>
 <script type="text/javascript" src="https://unpkg.com/mobx@3.1.16/lib/mobx.umd.js"></script>
 <script type="text/javascript" src="https://unpkg.com/mobx-react@4.2.2/index.js"></script>
+<script type="text/javascript" src="https://unpkg.com/mobx-react-devtools"></script>
 
 <script type="text/babel" data-presets="es2017,react,stage-0" data-plugins="transform-decorators-legacy">
-  const {observable, autorun, extendObservable} = mobx;
+  const {observable, autorun, computed, extendObservable, extendShallowObservable} = mobx;
+
+
+  const me = {
+    model: {
+      name: 'Yc'
+    },
+
+    status: 'ok'
+  }
+
+  window.me = me
+//  const t = window.t = observable(me)
+
+//  const t = window.t = extendObservable(me, {
+//    ...me
+//  })
+
+  function Person(name) {
+    this.name = name
+  }
+
+  const t = window.t = extendObservable(me, {
+    ...me,
+    ref: new Person('ss')
+  })
+
+  autorun(() => {
+    console.log(t, t.status, t.model, t.model.name)
+  })
+
+
+
   const {Provider, inject, observer} = mobxReact;
 
   //////////////
@@ -36,8 +69,8 @@
   }
 
   class TodoListStore {
-    @observable todoList = [];
-    @observable state = "all";
+    @observable.shallow todoList = [];
+    @observable.ref state = "all";
 
     add(todo) {
       if (!todo instanceof TodoStore) {
@@ -45,6 +78,14 @@
       }
       this.todoList.push(todo);
       return this;
+    }
+
+    @computed get doneOfTodoList() {
+      return this.todoList.map(x => x.state === TodoStore.DONE ? x : undefined)
+    }
+
+    @computed get todoOfTodoList() {
+      return this.todoList.map(x => x.state === TodoStore.TODO ? x : undefined)
     }
 
     get() {
@@ -56,6 +97,7 @@
     @observable text = "";
     @observable state = TodoStore.TODO;
   }
+
 
   class Store {
     todoList = new TodoListStore();
@@ -70,6 +112,10 @@
   }
 
   const store = new Store();
+  store.todoList
+    .add(new TodoStore(TodoStore.TODO, "todo"))
+    .add(new TodoStore(TodoStore.DONE, "done"))
+  window.store = store;
 
   //  @observer
   class Todo extends React.Component {
@@ -88,21 +134,54 @@
       )
     }
   }
+
+  @observer @inject("todoList")
+  class TodoMobx extends React.Component {
+    render() {
+      const {todo, onRemove, index} = this.props;
+      const {state, description} = todo;
+      return (
+        <div>
+          <h4>
+            <small>
+              {'#' + (index + 1)}
+            </small>
+            {state === TodoStore.DONE ? <del>{description}</del> : <span>{description}</span>}
+            <button onClick={() => {this.props.todoList.todoList.splice(index, 1)}}>Remove</button>
+          </h4>
+        </div>
+      )
+    }
+  }
+
   @inject("todoList") @observer
   class TodoList extends React.Component {
     constructor(props) {
       super(props);
-      this.triggerActive = this.triggerActive.bind(this);
+//      this.triggerActive = this.triggerActive.bind(this);
+    }
+    componentWillReact() {
+      console.error("I will re-render, since the todo has changed!");
     }
 
-    triggerActive(evt) {
+    triggerActive = (evt) => {
       const {todoList} = this.props;
-      todoList.state = evt.target.value;
-
+      let target = evt.target;
+      setTimeout(() => {
+        todoList.state = target.value;
+      }, 0);
     }
 
     render() {
-      const {todoList} = this.props;
+      let {todoList} = this.props;
+      let list = [];
+      if (todoList.state === 'all') {
+        list = todoList.get();
+      } else if (todoList.state === TodoStore.TODO){
+        list = todoList.todoOfTodoList
+      } else if (todoList.state === TodoStore.DONE){
+        list = todoList.doneOfTodoList
+      }
       return (
         <div>
           <button value="all" onClick={this.triggerActive}>all</button>
@@ -110,10 +189,11 @@
           <button value="todo" onClick={this.triggerActive}>todo</button>
           <small>active: {todoList.state}</small>
           {
-            todoList
-              .get()
-              .filter(({state}) => (todoList.state === 'all' || todoList.state === state))
-              .map((todo, i) => <Todo {...todo} index={i} key={i} onRemove={() => todoList.get().splice(i, 1)}/>)
+            list
+              .map((todo, i) =>
+                // todo && <Todo {...todo} index={i} key={i} onRemove={() => {todoList.todoList.splice(i, 1);} }/>
+                 todo && <TodoMobx todo={todo} index={i} key={i}/>
+              )
           }
         </div>
       )
@@ -157,6 +237,7 @@
     render() {
       return (
         <div>
+          <mobxDevtools.default />
           <TodoList />
           <TodoInput/>
         </div>
@@ -200,6 +281,9 @@
     </Provider>,
     document.getElementById('app')
   )
+
+
+
 
 </script>
 

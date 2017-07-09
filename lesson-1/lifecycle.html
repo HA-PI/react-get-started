@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+  <meta charset="UTF-8">
+  <title>Title</title>
 
 </head>
 <body>
@@ -15,81 +15,83 @@
 
 <script type="text/babel">
 
-    // props  state
+  // props  state
 
-    var Greeting = React.createClass({
-        propTypes: {
-            name: React.PropTypes.string
-        },
+  var Greeting = React.createClass({
+    propTypes: {
+      name: React.PropTypes.string
+    },
 
-        getDefaultProps: function() {
-            return {
-                name: 'Mary'
-            };
-        },
+    getDefaultProps: function () {
+      return {
+        name: 'Mary'
+      };
+    },
 
-        getInitialState: function() {
-            return {};
-        },
+    getInitialState: function () {
+      return {};
+    },
 
-        componentWillMount: function () {
-            // console.log(this.refs.p);
-            console.info('componentWillMount');
-        },
-        componentDidMount: function () {
-            // console.log(this.refs.p);
-            console.info('componentDidMount');
-        },
-        componentWillReceiveProps: function (newProps) {
-            console.info('componentWillReceiveProps');
-        },
-        shouldComponentUpdate: function () {
-            console.info('shouldComponentUpdate');
-            return true;
-        },
-        componentWillUpdate: function (newProps) {
-            console.info('componentWillUpdate');
-        },
-        componentDidUpdate: function (oldProps) {
-            console.info('componentDidUpdate');
-        },
-        componentWillUnmount: function() {
-            console.info('componentWillUnmount');
-        },
+    componentWillMount: function () {
+      // console.log(this.refs.p);
+      console.info('componentWillMount');
+    },
+    componentWillReact: function () {
+      console.info('componentWillReact');
+    },
+    componentDidMount: function () {
+      // console.log(this.refs.p);
+      console.info('componentDidMount');
+    },
+    componentWillReceiveProps: function (newProps) {
+      console.info('componentWillReceiveProps');
+    },
+    shouldComponentUpdate: function () {
+      console.info('shouldComponentUpdate');
+      return true;
+    },
+    componentWillUpdate: function (newProps) {
+      console.info('componentWillUpdate');
+    },
+    componentDidUpdate: function (oldProps) {
+      console.info('componentDidUpdate');
+    },
+    componentWillUnmount: function () {
+      console.info('componentWillUnmount');
+    },
 
-        render: function () {
-            console.info("render");
-            return (
-                <p ref="p">Hello, {this.props.name}</p>
-            )
-        }
-    });
+    render: function () {
+      console.info("render");
+      return (
+        <p ref="p">Hello, {this.props.name}</p>
+      )
+    }
+  });
 
 
+  var App = React.createClass({
+    getInitialState: function () {
+      return {show: true}
+    },
+    shouldComponentUpdate: function () {
+      return true;
+    },
+    render: function () {
+      var show = this.state.show;
+      return (
+        <div>
+          {show && <Greeting name="sssswws"/>}
+          <button onClick={e => this.setState({show: true})}>Show</button>
+          <button onClick={e => this.setState({show: false})}>Hide</button>
+        </div>
+      )
+    }
+  })
 
-    var App = React.createClass({
-        getInitialState: function() {
-           return {show: true}
-        },
-        shouldComponentUpdate: function () {
-            return true;
-        },
-        render: function () {
-            var show = this.state.show;
-            return (
-                <div>
-                    {show && <Greeting name="sssswws" />}
-                    <button onClick={e => this.setState({show: true})}>Show</button>
-                    <button onClick={e => this.setState({show: false})}>Hide</button>
-                </div>
-            )
-        }
-    })
-
-    ReactDOM.render(
-        <App />,
-        document.getElementById('app')
-    );
+  ReactDOM.render(
+    <App />,
+    document.getElementById('app')
+  );
 </script>
 
 </body>
