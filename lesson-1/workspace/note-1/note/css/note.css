@@ -1,0 +1,23 @@
+#div1 {
+    width: 800px;
+    height: 500px;
+    border: 1px dashed #bbaa33;
+    margin: 20px auto;
+}
+#input {
+    display: block;
+    margin: 10px auto;
+}
+#menu {
+    margin: 10px auto;
+    width: 100px;
+    height: 50px;
+}
+#list {
+    margin: 10px auto;
+    width: 500px;
+    height: 300px;
+    border: 1px dotted #cc6600;
+    overflow: auto;
+    list-style-type: none;
+}
